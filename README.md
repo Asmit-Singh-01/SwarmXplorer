@@ -1,8 +1,6 @@
 # SwarmXplorer 🛸
 
-> **A Hardware-Agnostic, Decentralized Swarm Intelligence Framework for Autonomous Exploration & Spatial Mapping.**
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+> **A Hardware-Agnostic, Decentralized Swarm Intelligence Framework for Autonomous Exploration & Spatial Mapping.*
 [![Build Status](https://img.shields.io/badge/Status-In_Development-brightgreen)](#)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](#)
 
