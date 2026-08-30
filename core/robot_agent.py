@@ -1,6 +1,8 @@
 import random
 import numpy as np
+
 from core.mesh_node import VirtualMeshNode
+from config import ROBOT_SPEED
 
 class SwarmAgent:
     def __init__(self, agent_id, x, y):
@@ -15,8 +17,8 @@ class SwarmAgent:
         self.mesh.update_connections(self.position, all_bot_positions)
         
         # 2. Simple Random Walk with obstacle/border avoidance
-        dx = np.cos(self.heading) * 2.0
-        dy = np.sin(self.heading) * 2.0
+        dx = np.cos(self.heading) * ROBOT_SPEED
+        dy = np.sin(self.heading) * ROBOT_SPEED
         
         new_x = self.position[0] + dx
         new_y = self.position[1] + dy
