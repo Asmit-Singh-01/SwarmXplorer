@@ -1,37 +1,28 @@
-import pygame
-import random
+import time
 from core.robot_agent import SwarmAgent
-from config import ARENA_WIDTH, ARENA_HEIGHT, NUM_ROBOTS
+from config import ARENA_WIDTH, ARENA_HEIGHT
 
-pygame.init()
-screen = pygame.display.set_mode((ARENA_WIDTH, ARENA_HEIGHT))
-clock = pygame.time.Clock()
+def run_simulation(steps=50):
+    print("--- SwarmXplorer Simulation Starting ---")
+    
+    # Initialize 3 Swarm Agents at center
+    bots = [
+        SwarmAgent(0, 400, 300),
+        SwarmAgent(1, 410, 305),
+        SwarmAgent(2, 390, 295)
+    ]
 
-# Spawn Swarm
-robots = [SwarmAgent(i, random.randint(50, 750), random.randint(50, 550)) for i in range(NUM_ROBOTS)]
-
-running = True
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-
-    screen.fill((20, 20, 20))
-
-    # Get positions dict for Mesh update
-    positions = {bot.id: bot.position for bot in robots}
-
-    for bot in robots:
-        bot.step(positions)
+    for step_num in range(1, steps + 1):
+        all_positions = {bot.id: bot.position for bot in bots}
         
-        # Draw Mesh Links
-        for n_id in bot.mesh.neighbors:
-            pygame.draw.line(screen, (0, 100, 255), bot.position, positions[n_id], 1)
+        for bot in bots:
+            bot.step(all_positions)
             
-        # Draw Robot Body
-        pygame.draw.circle(screen, (0, 255, 150), bot.position.astype(int), 5)
+        if step_num % 10 == 0:
+            print(f"Step {step_num}:")
+            for bot in bots:
+                print(f"  Robot {bot.id} Pos: [{bot.position[0]:.1f}, {bot.position[1]:.1f}] | Active Mesh Links: {bot.mesh.neighbors}")
 
-    pygame.display.flip()
-    clock.tick(30)
-
-pygame.quit()
+if __name__ == "__main__":
+    run_simulation()
+    
