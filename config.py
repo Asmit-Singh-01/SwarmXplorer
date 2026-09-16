@@ -1,9 +1,12 @@
-# Swarm & Map Configuration
+# Swarm Exploration Constants
+
+# Arena & Physics
 ARENA_WIDTH = 800
 ARENA_HEIGHT = 600
-NUM_ROBOTS = 10
-
-# Hardware Limits Simulation
-COMMUNICATION_RADIUS = 120  # Pixels (simulating Wi-Fi / ESP-NOW range)
 ROBOT_SPEED = 2.0
-SENSOR_RANGE = 50           # Obstacle sensing distance
+SENSOR_RANGE = 80.0
+COMMUNICATION_RADIUS = 120.0
+
+# Grid Mapping
+GRID_SIZE = 100  # 100x100 grid mapping
+CELL_SIZE = 8    # Each cell represents 8x8 pixels
