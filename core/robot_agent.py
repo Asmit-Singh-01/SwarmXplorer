@@ -27,9 +27,17 @@ class SwarmAgent:
         grid_x = int(self.position[0] / CELL_SIZE)
         grid_y = int(self.position[1] / CELL_SIZE)
         if 0 <= grid_x < GRID_SIZE and 0 <= grid_y < GRID_SIZE:
-            self.grid_map[grid_x, grid_y] = 1.0  # 1.0 = Explored
+            self.grid_map[grid_x, grid_y] = 1.0  # Explored cell
 
-    def step(self, all_bot_positions):
+    def sync_map_with_neighbors(self, all_agents_dict):
+        """Decentralized consensus: Merges maps with connected mesh neighbors."""
+        for neighbor_id in self.mesh.neighbors:
+            if neighbor_id in all_agents_dict:
+                neighbor_map = all_agents_dict[neighbor_id].grid_map
+                # Bitwise OR operation to merge discovered cells
+                self.grid_map = np.maximum(self.grid_map, neighbor_map)
+
+    def step(self, all_bot_positions, all_agents_dict):
         # 1. Update Mesh Network Connections
         self.mesh.update_connections(self.position, all_bot_positions)
         
@@ -50,6 +58,7 @@ class SwarmAgent:
         if self.position[1] <= 10 or self.position[1] >= ARENA_HEIGHT - 10:
             self.heading = -self.heading
 
-        # 4. Update Mapping Data
+        # 4. Local Mapping & Peer Syncing
         self.update_occupancy_grid()
+        self.sync_map_with_neighbors(all_agents_dict)
         
