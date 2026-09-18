@@ -27,9 +27,9 @@ jobs:
       run: |
         python main.py
 
-    - name: Upload Exploration Map Artifact
+    - name: Save Exploration Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: swarm-exploration-map
+        name: swarm-map-visual
         path: swarm_exploration_map.png
         
