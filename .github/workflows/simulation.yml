@@ -24,6 +24,8 @@ jobs:
         pip install numpy matplotlib
 
     - name: Run Swarm Simulation
+      env:
+        MPLBACKEND: Agg
       run: |
         python main.py
         
