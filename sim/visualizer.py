@@ -1,10 +1,9 @@
 import matplotlib
-matplotlib.use('Agg')  # Headless mode for server/GitHub Actions execution
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 
 def save_swarm_map(bots, filename="swarm_exploration_map.png"):
-    """Generates and saves a visual map of the swarm's coverage and mesh connectivity."""
     plt.figure(figsize=(8, 6))
     
     global_map = np.zeros_like(bots[0].grid_map)
