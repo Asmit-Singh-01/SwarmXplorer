@@ -24,6 +24,8 @@ jobs:
         pip install --no-cache-dir numpy matplotlib
 
     - name: Run Swarm Simulation
+      env:
+        PYTHONPATH: .
       run: |
         python main.py
         
