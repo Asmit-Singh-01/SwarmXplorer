@@ -1,8 +1,8 @@
-import sys
 import os
+import sys
 
-# Fix absolute imports across submodules
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# Set root project path for python module imports
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import config
 from core.robot_agent import RobotAgent
@@ -11,7 +11,6 @@ from sim.visualizer import save_swarm_map
 def main():
     print("Initializing SwarmXplorer System...")
     
-    # Initialize multi-robot swarm
     bots = [RobotAgent(bot_id=i) for i in range(config.NUM_ROBOTS)]
     
     print(f"Starting Swarm Simulation with {len(bots)} agents for {config.SIMULATION_STEPS} steps...")
