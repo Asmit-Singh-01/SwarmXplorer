@@ -1,18 +1,31 @@
 import sys
 import os
+
+# Fix absolute imports across submodules
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from sim.visualizer import save_swarm_map
-from core.robot_agent import RobotAgent
 import config
+from core.robot_agent import RobotAgent
+from sim.visualizer import save_swarm_map
 
-if __name__ == "__main__":
+def main():
+    print("Initializing SwarmXplorer System...")
+    
+    # Initialize multi-robot swarm
     bots = [RobotAgent(bot_id=i) for i in range(config.NUM_ROBOTS)]
+    
+    print(f"Starting Swarm Simulation with {len(bots)} agents for {config.SIMULATION_STEPS} steps...")
     
     for step in range(config.SIMULATION_STEPS):
         for bot in bots:
-            bot.step(bots)
-            
+            if hasattr(bot, 'step'):
+                bot.step(bots)
+            elif hasattr(bot, 'update'):
+                bot.update(bots)
+                
+    print("Simulation completed successfully. Generating exploration map...")
     save_swarm_map(bots)
-    print("Simulation completed successfully.")
+
+if __name__ == "__main__":
+    main()
     
