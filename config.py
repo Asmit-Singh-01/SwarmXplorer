@@ -1,12 +1,14 @@
-# Swarm Exploration Constants
+import os
 
-# Arena & Physics
-ARENA_WIDTH = 800
-ARENA_HEIGHT = 600
-ROBOT_SPEED = 2.0
-SENSOR_RANGE = 80.0
-COMMUNICATION_RADIUS = 120.0
+# Arena & Physics Configuration
+ARENA_WIDTH = 100
+ARENA_HEIGHT = 100
+NUM_ROBOTS = 5
+SIMULATION_STEPS = 50
 
-# Grid Mapping
-GRID_SIZE = 100  # 100x100 grid mapping
-CELL_SIZE = 8    # Each cell represents 8x8 pixels
+# Communication & Sensor Limits
+COMMUNICATION_RANGE = 25.0
+SENSOR_RANGE = 15.0
+
+# Matplotlib Non-Interactive Backend Fix for CI/CD
+os.environ["MPLBACKEND"] = "Agg"
