@@ -6,7 +6,7 @@ ARENA_HEIGHT = 100
 NUM_ROBOTS = 5
 SIMULATION_STEPS = 50
 
-# Communication & Sensor Limits (Dono names include kar diye hain taaki import fail na ho)
+# Communication & Sensor Limits
 COMMUNICATION_RANGE = 25.0
 COMMUNICATION_RADIUS = 25.0
 SENSOR_RANGE = 15.0
