@@ -26,7 +26,6 @@ jobs:
     - name: Run Swarm Simulation
       env:
         MPLBACKEND: Agg
-        PYTHONPATH: ${{ github.workspace }}
       run: |
         python main.py
         
