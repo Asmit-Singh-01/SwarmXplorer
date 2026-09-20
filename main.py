@@ -19,7 +19,7 @@ def main():
                 
     print("Saving map output...")
     save_swarm_map(bots)
-    print("Done!")
+    print("Simulation completed successfully!")
 
 if __name__ == "__main__":
     main()
