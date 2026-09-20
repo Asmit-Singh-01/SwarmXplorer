@@ -6,8 +6,9 @@ ARENA_HEIGHT = 100
 NUM_ROBOTS = 5
 SIMULATION_STEPS = 50
 
-# Communication & Sensor Limits
+# Communication & Sensor Limits (Dono names include kar diye hain taaki import fail na ho)
 COMMUNICATION_RANGE = 25.0
+COMMUNICATION_RADIUS = 25.0
 SENSOR_RANGE = 15.0
 
 # Matplotlib Non-Interactive Backend Fix for CI/CD
