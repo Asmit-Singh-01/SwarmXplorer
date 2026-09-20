@@ -1,36 +1,25 @@
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import numpy as np
+import os
 
 def save_swarm_map(bots, filename="swarm_exploration_map.png"):
-    plt.figure(figsize=(8, 6))
-    
-    global_map = np.zeros_like(bots[0].grid_map)
-    for bot in bots:
-        global_map = np.maximum(global_map, bot.grid_map)
-    
-    plt.imshow(global_map.T, cmap='Blues', origin='lower', extent=[0, 800, 0, 600], alpha=0.6)
-    
-    for i, bot_a in enumerate(bots):
-        for bot_b in bots:
-            if bot_b.id in bot_a.mesh.neighbors:
-                plt.plot([bot_a.position[0], bot_b.position[0]], 
-                         [bot_a.position[1], bot_b.position[1]], 
-                         'g--', alpha=0.5)
+    plt.figure(figsize=(8, 8))
     
     for bot in bots:
-        plt.scatter(bot.position[0], bot.position[1], color='red', s=100, zorder=5)
-        plt.text(bot.position[0] + 10, bot.position[1] + 10, f"Bot {bot.id}", fontsize=10, weight='bold')
-
-    plt.title("SwarmXplorer: Decentralized Coverage & Dynamic Mesh Network")
-    plt.xlabel("X Coordinate (m)")
-    plt.ylabel("Y Coordinate (m)")
-    plt.xlim(0, 800)
-    plt.ylim(0, 600)
-    plt.grid(True, linestyle=':', alpha=0.6)
+        # Plot robot positions
+        pos = getattr(bot, 'position', (0, 0))
+        plt.scatter(pos[0], pos[1], label=f"Robot {getattr(bot, 'id', 0)}")
+        
+    plt.title("SwarmXplorer - Real-time Swarm Mapping")
+    plt.xlabel("X Position")
+    plt.ylabel("Y Position")
+    plt.xlim(0, 100)
+    plt.ylim(0, 100)
+    plt.grid(True)
     
-    plt.savefig(filename, dpi=150, bbox_inches='tight')
+    # Save output plot
+    plt.savefig(filename, dpi=150)
     plt.close()
-    print(f"Map visualization saved to {filename}")
+    print(f"Map successfully saved to {filename}")
     
