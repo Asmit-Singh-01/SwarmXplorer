@@ -27,4 +27,10 @@ jobs:
     - name: Sanity Check
       run: |
         python -c "import numpy; import matplotlib; print('Dependencies Installed Successfully!')"
+    - name: Run Main Simulation
+      env:
+        PYTHONPATH: .
+        MPLBACKEND: Agg
+      run: |
+        python main.py
         
