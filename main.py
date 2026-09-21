@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 import numpy as np
 from core.robot_agent import RobotAgent
 from sim.visualizer import render_swarm
