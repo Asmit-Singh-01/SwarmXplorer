@@ -1,19 +1,20 @@
-import sys
-import os
-
-# Root directory path insert for module imports
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
+import numpy as np
 from algos.frontier_search import find_frontiers, get_best_frontier
-from core.mesh_node import VirtualMeshNode
-import config
 
 class RobotAgent:
-    def __init__(self, bot_id):
-        self.id = bot_id
-        self.position = [10.0 + bot_id * 5, 10.0 + bot_id * 5]
-        self.mesh = VirtualMeshNode(bot_id)
-        
-    def step(self, all_bots):
-        pass
+    def __init__(self, agent_id, start_pos):
+        self.agent_id = agent_id
+        self.position = np.array(start_pos, dtype=float)
+        self.local_map = np.zeros((50, 50), dtype=int)
+
+    def step(self):
+        # Basic movement logic towards unexplored area
+        frontiers = find_frontiers(self.local_map)
+        target = get_best_frontier(self.position, frontiers)
+        if target is not None:
+            direction = np.array(target) - self.position
+            norm = np.linalg.norm(direction)
+            if norm > 0:
+                self.position += (direction / norm)
+        return self.position
         
