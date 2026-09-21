@@ -28,6 +28,5 @@ jobs:
       env:
         PYTHONPATH: .
         MPLBACKEND: Agg
-      run: |
-        python main.py
-        
+      run: python main.py
+      
