@@ -1,4 +1,4 @@
-name: SwarmXplorer Simulation Run
+name: SwarmXplorer CI Pipeline
 
 on:
   push:
@@ -7,15 +7,15 @@ on:
     branches: [ main ]
 
 jobs:
-  run-simulation:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v3
+    - name: Checkout Code
+      uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v5
       with:
         python-version: '3.10'
 
@@ -24,9 +24,10 @@ jobs:
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-    - name: Run Swarm Simulation
+    - name: Run Main Simulation
       env:
         PYTHONPATH: .
         MPLBACKEND: Agg
-      run: python main.py
-      
+      run: |
+        python main.py
+        
