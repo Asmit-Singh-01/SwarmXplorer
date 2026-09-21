@@ -1,4 +1,4 @@
-name: SwarmXplorer Simulation Run
+  name: SwarmXplorer Simulation Run
 
 on:
   push:
@@ -25,9 +25,7 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
     - name: Run Swarm Simulation
-      env:
-        PYTHONPATH: .
-        MPLBACKEND: Agg
       run: |
+        export PYTHONPATH=$PYTHONPATH:.
         python main.py
         
