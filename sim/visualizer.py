@@ -1,11 +1,13 @@
 import matplotlib
-matplotlib.use('Agg')  # Headless mode for CI/CD environments
+matplotlib.use('Agg')  # Display-less background mode for CI/CD
 import matplotlib.pyplot as plt
 
-def save_swarm_map(bots, filename="swarm_exploration_map.png"):
-    print("Simulation completed. Robot positions:")
-    for bot in bots:
-        pos = getattr(bot, 'position', [0, 0])
-        bot_id = getattr(bot, 'id', 0)
-        print(f"Agent {bot_id} at position {pos}")
-        
+def render_swarm(agents, grid_map):
+    plt.figure(figsize=(6, 6))
+    plt.imshow(grid_map, cmap='binary')
+    for agent in agents:
+        plt.scatter(agent.position[1], agent.position[0], label=f"Agent {agent.agent_id}")
+    plt.title("SwarmXplorer Simulation")
+    plt.savefig("simulation_output.png")
+    plt.close()
+    
