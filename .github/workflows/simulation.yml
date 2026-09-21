@@ -24,8 +24,10 @@ jobs:
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
+    
     - name: Run Swarm Simulation
-      run: |
-        export PYTHONPATH=$PYTHONPATH:.
-        python main.py
-        
+      env:
+        PYTHONPATH: .
+        MPLBACKEND: Agg
+      run: python main.py
+      
