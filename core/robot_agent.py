@@ -1,3 +1,9 @@
+import sys
+import os
+
+# Root directory path append karna taaki 'algos' folder mil sake
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import numpy as np
 from algos.frontier_search import find_frontiers, get_best_frontier
 
@@ -8,7 +14,6 @@ class RobotAgent:
         self.local_map = np.zeros((50, 50), dtype=int)
 
     def step(self):
-        # Basic movement logic towards unexplored area
         frontiers = find_frontiers(self.local_map)
         target = get_best_frontier(self.position, frontiers)
         if target is not None:
