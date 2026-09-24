@@ -1,4 +1,10 @@
+import sys
+import os
 import numpy as np
+
+# Root directory path ko force append karna
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from config import GRID_WIDTH, GRID_HEIGHT, UNEXPLORED, FREE_SPACE
 from algos.frontier_search import find_frontiers, get_best_frontier
 
@@ -8,27 +14,19 @@ class RobotAgent:
         self.position = np.array([start_x, start_y], dtype=int)
         self.sensor_range = sensor_range
         
-        # Local Occupancy Grid
         self.local_map = np.full((GRID_HEIGHT, GRID_WIDTH), UNEXPLORED, dtype=int)
         self.scan_and_update_map()
 
     def scan_and_update_map(self):
-        """
-        Simulates sensor vision range around current position.
-        """
         cx, cy = self.position
         r = self.sensor_range
 
         x_min, x_max = max(0, cx - r), min(GRID_WIDTH, cx + r + 1)
         y_min, y_max = max(0, cy - r), min(GRID_HEIGHT, cy + r + 1)
 
-        # Mark vision field as explored free space
         self.local_map[y_min:y_max, x_min:x_max] = FREE_SPACE
 
     def step(self):
-        """
-        Autonomous Decision Making using Yamauchi Frontier Brain.
-        """
         frontiers = find_frontiers(self.local_map)
         target = get_best_frontier(self.position, frontiers)
 
@@ -36,7 +34,6 @@ class RobotAgent:
             target_x, target_y = target
             curr_x, curr_y = self.position
 
-            # Move 1 unit towards chosen frontier
             dx = np.sign(target_x - curr_x)
             dy = np.sign(target_y - curr_y)
 
@@ -45,7 +42,6 @@ class RobotAgent:
 
             self.position = np.array([new_x, new_y], dtype=int)
         
-        # Sense new surroundings after movement
         self.scan_and_update_map()
 
     def get_explored_percentage(self):
