@@ -7,6 +7,7 @@ class RobotAgent:
         self.agent_id = agent_id
         self.position = np.array([start_x, start_y], dtype=int)
         self.sensor_range = sensor_range
+        self.current_target = None
         
         self.local_map = np.full((GRID_HEIGHT, GRID_WIDTH), UNEXPLORED, dtype=int)
         self.scan_and_update_map()
@@ -20,11 +21,12 @@ class RobotAgent:
 
         self.local_map[y_min:y_max, x_min:x_max] = FREE_SPACE
 
-    def step(self):
+    def step(self, occupied_targets=None):
         frontiers = find_frontiers(self.local_map)
-        target = get_best_frontier(self.position, frontiers)
-
+        target = get_best_frontier(self.position, frontiers, occupied_targets)
+        
         if target is not None:
+            self.current_target = tuple(target)
             target_x, target_y = target
             curr_x, curr_y = self.position
 
@@ -35,8 +37,11 @@ class RobotAgent:
             new_y = np.clip(curr_y + dy, 0, GRID_HEIGHT - 1)
 
             self.position = np.array([new_x, new_y], dtype=int)
-        
+        else:
+            self.current_target = None
+
         self.scan_and_update_map()
+        return self.current_target
 
     def get_explored_percentage(self):
         explored_cells = np.sum(self.local_map == FREE_SPACE)
