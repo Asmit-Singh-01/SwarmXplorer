@@ -1,43 +1,36 @@
-import numpy as np
-import matplotlib
-matplotlib.use('Agg')  # Headless mode for CI/CD
-import matplotlib.pyplot as plt
+import time
+from core.robot_agent import RobotAgent
+from config import NUM_AGENTS, MAX_SIMULATION_STEPS
 
-# --- CONFIGURATION ---
-GRID_SIZE = (50, 50)
-NUM_AGENTS = 3
-
-# --- AGENT LOGIC ---
-class RobotAgent:
-    def __init__(self, agent_id, start_pos):
-        self.agent_id = agent_id
-        self.position = np.array(start_pos, dtype=float)
-
-    def step(self):
-        # Basic forward movement step
-        self.position += np.array([1.0, 1.0])
-        return self.position
-
-# --- SIMULATION MAIN ---
 def main():
-    print("Starting SwarmXplorer Engine...")
-    grid_map = np.ones(GRID_SIZE, dtype=int)
-    
-    agents = [RobotAgent(i, (10 * i + 5, 10 * i + 5)) for i in range(NUM_AGENTS)]
-    
-    for agent in agents:
-        agent.step()
-        
-    # Render Output
-    plt.figure(figsize=(6, 6))
-    plt.imshow(grid_map, cmap='binary')
-    for agent in agents:
-        plt.scatter(agent.position[1], agent.position[0], label=f"Agent {agent.agent_id}")
-    plt.title("SwarmXplorer Simulation")
-    plt.savefig("simulation_output.png")
-    plt.close()
+    print("=" * 50)
+    print(" SwarmXplorer - Phase 1: Core Engine Initialized")
+    print("=" * 50)
 
-    print("Simulation completed successfully. Image saved to simulation_output.png")
+    # Initialize Swarm Agents at different starting coordinates
+    agents = [
+        RobotAgent(agent_id=0, start_x=0, start_y=0),
+        RobotAgent(agent_id=1, start_x=5, start_y=5),
+        RobotAgent(agent_id=2, start_x=10, start_y=10)
+    ]
+
+    print(f"[*] Spawned {NUM_AGENTS} Autonomous Agents in Grid.")
+
+    # Execution Loop
+    for step_num in range(1, MAX_SIMULATION_STEPS + 1):
+        print(f"\n--- Simulation Step {step_num}/{MAX_SIMULATION_STEPS} ---")
+        
+        for agent in agents:
+            agent.step()
+            coverage = agent.get_explored_percentage()
+            print(f"[Agent {agent.agent_id}] Pos: {agent.position.tolist()} | Local Exploration: {coverage:.2f}%")
+        
+        time.sleep(0.1)
+
+    print("\n" + "=" * 50)
+    print(" Simulation Run Completed Successfully.")
+    print("=" * 50)
 
 if __name__ == "__main__":
     main()
+    
