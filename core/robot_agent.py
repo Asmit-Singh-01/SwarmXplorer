@@ -1,12 +1,6 @@
-import sys
-import os
 import numpy as np
-
-# Root directory path ko force append karna
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 from config import GRID_WIDTH, GRID_HEIGHT, UNEXPLORED, FREE_SPACE
-from algos.frontier_search import find_frontiers, get_best_frontier
+from core.frontier_search import find_frontiers, get_best_frontier
 
 class RobotAgent:
     def __init__(self, agent_id, start_x, start_y, sensor_range=3):
