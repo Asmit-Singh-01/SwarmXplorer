@@ -26,5 +26,5 @@ jobs:
 
     - name: Run Main Simulation
       run: |
-        python main.py
+        python -m main
         
