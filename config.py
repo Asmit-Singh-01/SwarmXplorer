@@ -1,6 +1,13 @@
-# SwarmXplorer Configuration Setup
+# System & Grid Configuration
+GRID_WIDTH = 20
+GRID_HEIGHT = 20
 
-GRID_SIZE = (50, 50)
+# Swarm Configuration
 NUM_AGENTS = 3
-COMMUNICATION_RADIUS = 10.0
-MAX_STEPS = 100
+COMMUNICATION_RADIUS = 5.0
+MAX_SIMULATION_STEPS = 10
+
+# Map Legend
+UNEXPLORED = 0
+FREE_SPACE = 1
+OBSTACLE = 2
