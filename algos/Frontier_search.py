@@ -1,25 +1,35 @@
 import numpy as np
+from config import UNEXPLORED, FREE_SPACE
 
 def find_frontiers(grid_map):
     """
-    Find unexplored frontier cells in the grid map.
-    0: Unexplored, 1: Free, 2: Obstacle
+    Scans 2D grid matrix to find frontier cells (unexplored cells bordering explored free space).
     """
     frontiers = []
     rows, cols = grid_map.shape
+
+    # Grid boundaries inside search
     for r in range(1, rows - 1):
         for c in range(1, cols - 1):
-            if grid_map[r, c] == 1:  # Free space
-                # Check adjacent cells for unexplored space (0)
-                if np.any(grid_map[r-1:r+2, c-1:c+2] == 0):
-                    frontiers.append((r, c))
+            if grid_map[r, c] == UNEXPLORED:
+                # Agar cell unexplored hai aur iska koi neighbor FREE_SPACE hai, toh ye frontier hai
+                neighbors = grid_map[r-1:r+2, c-1:c+2]
+                if np.any(neighbors == FREE_SPACE):
+                    frontiers.append((c, r))  # Stored as (x, y) coordinates
+
     return frontiers
 
-def get_best_frontier(robot_pos, frontiers):
+
+def get_best_frontier(agent_pos, frontiers):
+    """
+    Calculates Euclidean distance to all detected frontiers and returns the closest one.
+    """
     if not frontiers:
         return None
-    # Pick closest frontier based on Euclidean distance
-    distances = [np.linalg.norm(np.array(robot_pos) - np.array(f)) for f in frontiers]
-    min_index = np.argmin(distances)
-    return frontiers[min_index]
+
+    agent_coords = np.array(agent_pos)
+    distances = [np.linalg.norm(agent_coords - np.array(f)) for f in frontiers]
+    closest_index = np.argmin(distances)
+    
+    return frontiers[closest_index]
     
