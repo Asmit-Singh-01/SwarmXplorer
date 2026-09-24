@@ -1,28 +1,22 @@
-import math
+import numpy as np
 from config import COMMUNICATION_RADIUS
 
-class VirtualMeshNode:
-    def __init__(self, node_id):
-        self.node_id = node_id
-        self.neighbors = []
+class MeshNode:
+    """
+    Handles Peer-to-Peer dynamic network topology and spatial map consensus.
+    """
+    @staticmethod
+    def is_in_range(pos_a, pos_b, comm_radius=COMMUNICATION_RADIUS):
+        """Checks if two agents are within P2P wireless signal range."""
+        dist = np.linalg.norm(np.array(pos_a) - np.array(pos_b))
+        return dist <= comm_radius
 
-    def update_connections(self, my_pos, all_nodes):
-        """Connects to robots within the communication radius."""
-        self.neighbors.clear()
-        
-        for other_id, other_pos in all_nodes.items():
-            if other_id == self.node_id:
-                continue
-            
-            distance = math.hypot(my_pos[0] - other_pos[0], my_pos[1] - other_pos[1])
-            if distance <= COMMUNICATION_RADIUS:
-                self.neighbors.append(other_id)
-
-    def broadcast_packet(self, data):
-        """Creates a simulated P2P network packet."""
-        return {
-            "sender": self.node_id,
-            "payload": data,
-            "hops": self.neighbors.copy()
-        }
+    @staticmethod
+    def sync_maps(agent_a, agent_b):
+        """
+        Executes bidirectional Occupancy Grid consensus merge between two agents.
+        """
+        merged_map = np.maximum(agent_a.local_map, agent_b.local_map)
+        agent_a.local_map = merged_map.copy()
+        agent_b.local_map = merged_map.copy()
         
