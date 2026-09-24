@@ -1,34 +1,55 @@
 import numpy as np
 from config import GRID_WIDTH, GRID_HEIGHT, UNEXPLORED, FREE_SPACE
+from algos.frontier_search import find_frontiers, get_best_frontier
 
 class RobotAgent:
-    def __init__(self, agent_id, start_x, start_y):
+    def __init__(self, agent_id, start_x, start_y, sensor_range=3):
         self.agent_id = agent_id
         self.position = np.array([start_x, start_y], dtype=int)
+        self.sensor_range = sensor_range
         
-        # Har agent ka apna local map representation (2D Matrix)
+        # Local Occupancy Grid
         self.local_map = np.full((GRID_HEIGHT, GRID_WIDTH), UNEXPLORED, dtype=int)
-        
-        # Initial spawn spot ko explore mark karo
-        self.update_map()
+        self.scan_and_update_map()
 
-    def update_map(self):
-        # Current position ko free space mark karo
-        x, y = self.position
-        if 0 <= x < GRID_WIDTH and 0 <= y < GRID_HEIGHT:
-            self.local_map[y, x] = FREE_SPACE
+    def scan_and_update_map(self):
+        """
+        Simulates sensor vision range around current position.
+        """
+        cx, cy = self.position
+        r = self.sensor_range
+
+        x_min, x_max = max(0, cx - r), min(GRID_WIDTH, cx + r + 1)
+        y_min, y_max = max(0, cy - r), min(GRID_HEIGHT, cy + r + 1)
+
+        # Mark vision field as explored free space
+        self.local_map[y_min:y_max, x_min:x_max] = FREE_SPACE
 
     def step(self):
-        # Phase 1 simple movement: Rightward & Downward step (Boundary limit check ke saath)
-        new_x = min(self.position[0] + 1, GRID_WIDTH - 1)
-        new_y = min(self.position[1] + 1, GRID_HEIGHT - 1)
+        """
+        Autonomous Decision Making using Yamauchi Frontier Brain.
+        """
+        frontiers = find_frontiers(self.local_map)
+        target = get_best_frontier(self.position, frontiers)
+
+        if target is not None:
+            target_x, target_y = target
+            curr_x, curr_y = self.position
+
+            # Move 1 unit towards chosen frontier
+            dx = np.sign(target_x - curr_x)
+            dy = np.sign(target_y - curr_y)
+
+            new_x = np.clip(curr_x + dx, 0, GRID_WIDTH - 1)
+            new_y = np.clip(curr_y + dy, 0, GRID_HEIGHT - 1)
+
+            self.position = np.array([new_x, new_y], dtype=int)
         
-        self.position = np.array([new_x, new_y], dtype=int)
-        self.update_map()
-        
+        # Sense new surroundings after movement
+        self.scan_and_update_map()
+
     def get_explored_percentage(self):
-        # Kitna percentage map explore hua hai
-        explored_cells = np.sum(self.local_map != UNEXPLORED)
+        explored_cells = np.sum(self.local_map == FREE_SPACE)
         total_cells = GRID_WIDTH * GRID_HEIGHT
         return (explored_cells / total_cells) * 100
         
