@@ -14,13 +14,26 @@ def find_frontiers(grid_map):
 
     return frontiers
 
-def get_best_frontier(agent_pos, frontiers):
+def get_best_frontier(agent_pos, frontiers, occupied_targets=None):
+    """
+    Finds the closest frontier target that is NOT already claimed by another agent.
+    """
     if not frontiers:
         return None
 
+    if occupied_targets is None:
+        occupied_targets = []
+
+    # Exclude targets that other agents are already heading towards
+    available_frontiers = [f for f in frontiers if tuple(f) not in occupied_targets]
+
+    if not available_frontiers:
+        # Fallback to any remaining frontier if all are claimed
+        available_frontiers = frontiers
+
     agent_coords = np.array(agent_pos)
-    distances = [np.linalg.norm(agent_coords - np.array(f)) for f in frontiers]
+    distances = [np.linalg.norm(agent_coords - np.array(f)) for f in available_frontiers]
     closest_index = np.argmin(distances)
     
-    return frontiers[closest_index]
-  
+    return available_frontiers[closest_index]
+    
