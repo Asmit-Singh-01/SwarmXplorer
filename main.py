@@ -1,26 +1,43 @@
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
 import numpy as np
-from core.robot_agent import RobotAgent
-from sim.visualizer import render_swarm
-from config import NUM_AGENTS, GRID_SIZE
+import matplotlib
+matplotlib.use('Agg')  # Headless mode for CI/CD
+import matplotlib.pyplot as plt
 
+# --- CONFIGURATION ---
+GRID_SIZE = (50, 50)
+NUM_AGENTS = 3
+
+# --- AGENT LOGIC ---
+class RobotAgent:
+    def __init__(self, agent_id, start_pos):
+        self.agent_id = agent_id
+        self.position = np.array(start_pos, dtype=float)
+
+    def step(self):
+        # Basic forward movement step
+        self.position += np.array([1.0, 1.0])
+        return self.position
+
+# --- SIMULATION MAIN ---
 def main():
     print("Starting SwarmXplorer Engine...")
     grid_map = np.ones(GRID_SIZE, dtype=int)
     
-    # Initialize agents
     agents = [RobotAgent(i, (10 * i + 5, 10 * i + 5)) for i in range(NUM_AGENTS)]
     
-    # Run simulation step
     for agent in agents:
         agent.step()
         
-    render_swarm(agents, grid_map)
-    print("Simulation completed successfully. Output saved to simulation_output.png")
+    # Render Output
+    plt.figure(figsize=(6, 6))
+    plt.imshow(grid_map, cmap='binary')
+    for agent in agents:
+        plt.scatter(agent.position[1], agent.position[0], label=f"Agent {agent.agent_id}")
+    plt.title("SwarmXplorer Simulation")
+    plt.savefig("simulation_output.png")
+    plt.close()
+
+    print("Simulation completed successfully. Image saved to simulation_output.png")
 
 if __name__ == "__main__":
     main()
-    
