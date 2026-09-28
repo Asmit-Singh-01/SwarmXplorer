@@ -2,9 +2,9 @@ name: SwarmXplorer Autonomous Engineer Agent
 
 on:
   schedule:
-    # Continuous daily commits ke liye (Har 2 ghante me automatic chalega)
+    # Har 2 ghante me run hoga
     - cron: '0 */2 * * *'
-  workflow_dispatch: # Phone se manual trigger karne ke liye
+  workflow_dispatch: # Manual test ke liye
 
 jobs:
   agent-build:
@@ -27,23 +27,22 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          python -c "
-          import os, glob, json
+          cat << 'EOF' > agent_script.py
+          import os, glob, json, time
           from google import genai
 
-          # 1. Repo ki existing python files ka context read karo
+          # 1. Read existing code context
           repo_files = glob.glob('**/*.py', recursive=True) + glob.glob('**/*.md', recursive=True)
           context = ''
-          for fname in repo_files[:10]:
+          for fname in repo_files[:8]:
               try:
                   with open(fname, 'r') as f:
-                      context += f'--- File: {fname} ---\n' + f.read()[:800] + '\n\n'
+                      context += f'--- File: {fname} ---\n' + f.read()[:600] + '\n\n'
               except Exception:
                   pass
 
-          # 2. Gemini AI ko SwarmXplorer ke liye feature code likhne ko bolo
           client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
-          prompt = f'''
+          prompt = f"""
           You are a Senior Swarm Intelligence Engineer for SwarmXplorer framework.
           Current repo context:
           {context}
@@ -51,16 +50,28 @@ jobs:
           Task: Generate a production-grade Python module, algorithm (in algos/), simulation component (in sim/), or unit test (in tests/) to improve this framework.
           Output strictly valid JSON only:
           {{
-            \"filepath\": \"relative path like algos/dynamic_obstacle_avoidance.py\",
-            \"code\": \"full runnable python code with comments\",
-            \"commit_message\": \"feat(algos): added dynamic obstacle avoidance module\"
+            "filepath": "relative path like algos/dynamic_obstacle_avoidance.py",
+            "code": "full runnable python code with comments",
+            "commit_message": "feat(algos): added dynamic obstacle avoidance module"
           }}
-          '''
+          """
 
-          response = client.models.generate_content(
-              model='gemini-3.8-flash',
-              contents=prompt
-          )
+          # 2. Retry Logic for 503 Server Busy Errors
+          response = None
+          for attempt in range(3):
+              try:
+                  response = client.models.generate_content(
+                      model='gemini-2.5-flash',
+                      contents=prompt
+                  )
+                  break
+              except Exception as e:
+                  print(f"Attempt {attempt+1} failed due to server load: {e}")
+                  time.sleep(5)
+
+          if not response:
+              print("Google servers are busy. Skipping this run without failing.")
+              exit(0)
 
           text = response.text.strip()
           if text.startswith('```json'):
@@ -70,14 +81,16 @@ jobs:
 
           data = json.loads(text)
 
-          # Directory check aur file creation
+          # Ensure directory exists and write file
           os.makedirs(os.path.dirname(data['filepath']), exist_ok=True)
           with open(data['filepath'], 'w') as f:
               f.write(data['code'])
 
           with open('commit_msg.txt', 'w') as f:
               f.write(data['commit_message'])
-          "
+          EOF
+
+          python agent_script.py
 
       - name: Commit and Push Agent Contributions
         run: |
