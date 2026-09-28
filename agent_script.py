@@ -1,0 +1,60 @@
+import os, glob, json, time
+from google import genai
+
+# 1. Read existing code context
+repo_files = glob.glob('**/*.py', recursive=True) + glob.glob('**/*.md', recursive=True)
+context = ''
+for fname in repo_files[:8]:
+    try:
+        with open(fname, 'r') as f:
+            context += f'--- File: {fname} ---\n' + f.read()[:600] + '\n\n'
+    except Exception:
+        pass
+
+client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
+prompt = f"""
+You are a Senior Swarm Intelligence Engineer for SwarmXplorer framework.
+Current repo context:
+{context}
+
+Task: Generate a production-grade Python module, algorithm (in algos/), simulation component (in sim/), or unit test (in tests/) to improve this framework.
+Output strictly valid JSON only:
+{{
+  "filepath": "relative path like algos/dynamic_obstacle_avoidance.py",
+  "code": "full runnable python code with comments",
+  "commit_message": "feat(algos): added dynamic obstacle avoidance module"
+}}
+"""
+
+# 2. Retry Logic for 503 Server Busy Errors
+response = None
+for attempt in range(3):
+    try:
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt
+        )
+        break
+    except Exception as e:
+        print(f"Attempt {attempt+1} failed due to server load: {e}")
+        time.sleep(5)
+
+if not response:
+    print("Google servers are busy. Skipping this run without failing.")
+    exit(0)
+
+text = response.text.strip()
+if text.startswith('```json'):
+    text = text[7:-3].strip()
+elif text.startswith('```'):
+    text = text[3:-3].strip()
+
+data = json.loads(text)
+
+# Ensure directory exists and write file
+os.makedirs(os.path.dirname(data['filepath']), exist_ok=True)
+with open(data['filepath'], 'w') as f:
+    f.write(data['code'])
+
+with open('commit_msg.txt', 'w') as f:
+    f.write(data['commit_message'])
