@@ -93,9 +93,10 @@ jobs:
           python agent_script.py
 
       - name: Commit and Push Agent Contributions
-        run: |
-          git config --global user.name 'Swarm-Architect-Bot'
-          git config --global user.email 'swarm-agent@github.com'
+        run:
+          git config --global user.name 'Asmit Singh'
+          git config --global user.email 'asmitsingh044@gmail.com'
+
           git add .
           
           MSG=$(cat commit_msg.txt 2>/dev/null || echo "feat(swarm): continuous autonomous improvement")
