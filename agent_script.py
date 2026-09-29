@@ -1,10 +1,10 @@
 import os, glob, json, time
 from google import genai
 
-# 1. Read existing code context
-repo_files = glob.glob('**/*.py', recursive=True) + glob.glob('**/*.md', recursive=True)
+# 1. Read existing code context across languages
+repo_files = glob.glob('**/*.py', recursive=True) + glob.glob('**/*.cpp', recursive=True) + glob.glob('**/*.rs', recursive=True) + glob.glob('**/*.js', recursive=True) + glob.glob('**/*.md', recursive=True)
 context = ''
-for fname in repo_files[:8]:
+for fname in repo_files[:10]:
     try:
         with open(fname, 'r') as f:
             context += f'--- File: {fname} ---\n' + f.read()[:600] + '\n\n'
@@ -12,21 +12,24 @@ for fname in repo_files[:8]:
         pass
 
 client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
+
+# Polyglot Prompt Injection
 prompt = f"""
-You are a Senior Swarm Intelligence Engineer for SwarmXplorer framework.
+You are a Polyglot Systems Architect for SwarmXplorer: A Hardware-Agnostic Decentralized Swarm Intelligence Framework.
+Do not restrict to Python. Output production code in Python, C++ (ROS2/hardware), Web Dashboard (JS/HTML/CSS), or Rust (Mesh Network) depending on the needs of a decentralized swarm intelligence framework.
+
 Current repo context:
 {context}
 
-Task: Generate a production-grade Python module, algorithm (in algos/), simulation component (in sim/), or unit test (in tests/) to improve this framework.
-Output strictly valid JSON only:
+Task: Identify a missing production component and generate code.
+Output strictly valid JSON only with keys:
 {{
-  "filepath": "relative path like algos/dynamic_obstacle_avoidance.py",
-  "code": "full runnable python code with comments",
-  "commit_message": "feat(algos): added dynamic obstacle avoidance module"
+  "filepath": "relative path like web/dashboard.js or cpp/mesh_node.cpp or algos/p2p_sync.py",
+  "code": "full runnable production code with detailed comments",
+  "commit_message": "feat(core): brief conventional commit message"
 }}
 """
 
-# 2. Retry Logic for 503 Server Busy Errors
 response = None
 for attempt in range(3):
     try:
@@ -40,7 +43,7 @@ for attempt in range(3):
         time.sleep(5)
 
 if not response:
-    print("Google servers are busy. Skipping this run without failing.")
+    print("Google servers busy. Skipping safely.")
     exit(0)
 
 text = response.text.strip()
@@ -51,7 +54,7 @@ elif text.startswith('```'):
 
 data = json.loads(text)
 
-# Ensure directory exists and write file
+# Directory check & write file
 os.makedirs(os.path.dirname(data['filepath']), exist_ok=True)
 with open(data['filepath'], 'w') as f:
     f.write(data['code'])
