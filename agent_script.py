@@ -1,8 +1,10 @@
-import os, glob, json, time
+import os, glob, json, time, random
 from google import genai
 
-# 1. Read existing code context across languages
-repo_files = glob.glob('**/*.py', recursive=True) + glob.glob('**/*.cpp', recursive=True) + glob.glob('**/*.rs', recursive=True) + glob.glob('**/*.js', recursive=True) + glob.glob('**/*.md', recursive=True)
+# 1. Gather all existing polyglot files in SwarmXplorer
+repo_files = glob.glob('**/*.py', recursive=True) + glob.glob('**/*.cpp', recursive=True) + glob.glob('**/*.js', recursive=True) + glob.glob('**/*.rs', recursive=True)
+
+# Read file content snippets for context
 context = ''
 for fname in repo_files[:10]:
     try:
@@ -13,20 +15,26 @@ for fname in repo_files[:10]:
 
 client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
 
-# Polyglot Prompt Injection
-prompt = f"""
-You are a Polyglot Systems Architect for SwarmXplorer: A Hardware-Agnostic Decentralized Swarm Intelligence Framework.
-Do not restrict to Python. Output production code in Python, C++ (ROS2/hardware), Web Dashboard (JS/HTML/CSS), or Rust (Mesh Network) depending on the needs of a decentralized swarm intelligence framework.
+# 2. Decide action: Modify existing file OR Create new module
+target_file = random.choice(repo_files) if repo_files and random.random() > 0.5 else None
 
+if target_file:
+    prompt_task = f"Refactor and enhance the existing file '{target_file}' to add new features, optimize algorithms, or fix potential bugs without breaking architecture."
+else:
+    prompt_task = "Create a new production-ready polyglot module, simulation component, or algorithm (in Python, C++, JS Web visualizer, or Rust mesh network)."
+
+prompt = f"""
+You are a Senior Polyglot Systems Architect for SwarmXplorer: A Hardware-Agnostic Decentralized Swarm Intelligence Framework.
 Current repo context:
 {context}
 
-Task: Identify a missing production component and generate code.
-Output strictly valid JSON only with keys:
+Task: {prompt_task}
+
+Provide output strictly as valid JSON only:
 {{
-  "filepath": "relative path like web/dashboard.js or cpp/mesh_node.cpp or algos/p2p_sync.py",
-  "code": "full runnable production code with detailed comments",
-  "commit_message": "feat(core): brief conventional commit message"
+  "filepath": "{target_file if target_file else 'relative path like algos/dynamic_nav.py or web/visualizer.js'}",
+  "code": "full runnable production code with inline docstrings",
+  "commit_message": "feat(swarm): clear conventional commit message"
 }}
 """
 
@@ -43,7 +51,7 @@ for attempt in range(3):
         time.sleep(5)
 
 if not response:
-    print("Google servers busy. Skipping safely.")
+    print("Google servers busy. Exiting cleanly.")
     exit(0)
 
 text = response.text.strip()
@@ -54,7 +62,7 @@ elif text.startswith('```'):
 
 data = json.loads(text)
 
-# Directory check & write file
+# Ensure parent folder exists & write/update file
 os.makedirs(os.path.dirname(data['filepath']), exist_ok=True)
 with open(data['filepath'], 'w') as f:
     f.write(data['code'])
