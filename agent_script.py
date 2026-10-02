@@ -1,10 +1,9 @@
 import os, glob, json, time, random
 from google import genai
 
-# 1. Gather all existing polyglot files in SwarmXplorer
+# Gather code files across languages
 repo_files = glob.glob('**/*.py', recursive=True) + glob.glob('**/*.cpp', recursive=True) + glob.glob('**/*.js', recursive=True) + glob.glob('**/*.rs', recursive=True)
 
-# Read file content snippets for context
 context = ''
 for fname in repo_files[:10]:
     try:
@@ -15,26 +14,26 @@ for fname in repo_files[:10]:
 
 client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
 
-# 2. Decide action: Modify existing file OR Create new module
+# Decide action: 50% chance modify existing, 50% chance new file
 target_file = random.choice(repo_files) if repo_files and random.random() > 0.5 else None
 
 if target_file:
-    prompt_task = f"Refactor and enhance the existing file '{target_file}' to add new features, optimize algorithms, or fix potential bugs without breaking architecture."
+    prompt_task = f"Refactor and enhance existing file '{target_file}' with new polyglot algorithms, optimizations, or docs."
 else:
-    prompt_task = "Create a new production-ready polyglot module, simulation component, or algorithm (in Python, C++, JS Web visualizer, or Rust mesh network)."
+    prompt_task = "Create a new production-ready polyglot module, simulation component, or algorithm in algos/, core/, sim/, or web/."
 
 prompt = f"""
-You are a Senior Polyglot Systems Architect for SwarmXplorer: A Hardware-Agnostic Decentralized Swarm Intelligence Framework.
+You are a Senior Polyglot Systems Architect for SwarmXplorer framework.
 Current repo context:
 {context}
 
 Task: {prompt_task}
 
-Provide output strictly as valid JSON only:
+Output strictly valid JSON only:
 {{
-  "filepath": "{target_file if target_file else 'relative path like algos/dynamic_nav.py or web/visualizer.js'}",
-  "code": "full runnable production code with inline docstrings",
-  "commit_message": "feat(swarm): clear conventional commit message"
+  "filepath": "{target_file if target_file else 'algos/swarm_optimizer.py'}",
+  "code": "full runnable production code",
+  "commit_message": "feat(swarm): autonomous polyglot enhancement"
 }}
 """
 
@@ -47,11 +46,11 @@ for attempt in range(3):
         )
         break
     except Exception as e:
-        print(f"Attempt {attempt+1} failed due to server load: {e}")
+        print(f"Attempt {attempt+1} failed: {e}")
         time.sleep(5)
 
 if not response:
-    print("Google servers busy. Exiting cleanly.")
+    print("Gemini API unavailable. Skipping gracefully.")
     exit(0)
 
 text = response.text.strip()
@@ -62,10 +61,13 @@ elif text.startswith('```'):
 
 data = json.loads(text)
 
-# Ensure parent folder exists & write/update file
-os.makedirs(os.path.dirname(data['filepath']), exist_ok=True)
-with open(data['filepath'], 'w') as f:
-    f.write(data['code'])
+filepath = data.get('filepath', 'algos/swarm_optimizer.py')
+code = data.get('code', '# Autonomous update')
+commit_msg = data.get('commit_message', 'feat(swarm): polyglot update')
+
+os.makedirs(os.path.dirname(filepath), exist_ok=True)
+with open(filepath, 'w') as f:
+    f.write(code)
 
 with open('commit_msg.txt', 'w') as f:
-    f.write(data['commit_message'])
+    f.write(commit_msg)
