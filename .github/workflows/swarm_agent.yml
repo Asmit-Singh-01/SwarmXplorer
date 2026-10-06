@@ -6,17 +6,21 @@ on:
     - cron: '14 */2 * * *'
   workflow_dispatch: # Manual test trigger
 
+permissions:
+  contents: write
+
 jobs:
   agent-build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout SwarmXplorer Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
@@ -109,7 +113,6 @@ jobs:
 
       - name: Commit and Push Agent Contributions
         run: |
-          # Use your exact GitHub email address
           git config --global user.name 'Asmit Singh'
           git config --global user.email 'asmitsingh044@gmail.com'
           
@@ -117,7 +120,6 @@ jobs:
           
           MSG=$(cat commit_msg.txt 2>/dev/null || echo "feat(swarm): autonomous polyglot commit")
           
-          # Removed [skip ci] so GitHub triggers and counts streak properly
           git commit -m "$MSG" || exit 0
-          git push
+          git push origin main
           
