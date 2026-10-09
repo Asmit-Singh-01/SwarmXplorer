@@ -4,6 +4,7 @@ from core.environment import Environment
 from core.robot_agent import RobotAgent
 from core.mesh_node import MeshNode
 from core.renderer import TerminalRenderer
+from core.analytics import SwarmAnalytics
 from config import NUM_AGENTS, MAX_SIMULATION_STEPS, GRID_WIDTH, GRID_HEIGHT, UNEXPLORED
 
 def get_merged_global_map(agents):
@@ -26,7 +27,7 @@ def handle_p2p_mesh_sync(agents):
 
 def main():
     print("=" * 60)
-    print(" SwarmXplorer - Production Swarm Engine")
+    print(" SwarmXplorer - Advanced Path-Planning Swarm Engine")
     print("=" * 60)
 
     env = Environment()
@@ -46,11 +47,12 @@ def main():
         handle_p2p_mesh_sync(agents)
         global_map = get_merged_global_map(agents)
         coverage = calculate_global_coverage(global_map)
-        print(f"[*] Step {step_num:02d}/{MAX_SIMULATION_STEPS:02d} | Global Swarm Coverage: {coverage:.2f}%")
+        print(f"[*] Step {step_num:02d}/{MAX_SIMULATION_STEPS:02d} | Global Coverage: {coverage:.2f}%")
 
-    # Render Terminal Grid at the end of run
-    print("\n[+] Final Swarm Arena Knowledge State:")
+    # Render Terminal Grid and Analytics
+    print("\n[+] Final Arena Knowledge Base:")
     TerminalRenderer.render(global_map, agents)
+    SwarmAnalytics.print_performance_report(agents, coverage)
 
 if __name__ == "__main__":
     main()
