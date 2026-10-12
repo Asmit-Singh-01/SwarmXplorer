@@ -22,7 +22,7 @@ def calculate_global_coverage(global_map):
 
 def main():
     print("=" * 65)
-    print(" SwarmXplorer - Advanced Distributed Consensus & Leader Election")
+    print(" SwarmXplorer - Advanced Flocking & Formation Control Engine")
     print("=" * 65)
 
     env = Environment()
@@ -37,27 +37,21 @@ def main():
     for agent in agents:
         health_monitor.register_agent(agent.agent_id)
 
-    print(f"[*] Initialized Swarm Mesh with {len(agents)} Autonomous Nodes.")
-
     for step_num in range(1, MAX_SIMULATION_STEPS + 1):
         for agent in agents:
             health_monitor.update_heartbeat(agent.agent_id)
 
         active_agents = health_monitor.get_active_agents(agents)
-        
-        # Execute Decentralized Leader Election consensus
         current_leader = LeaderElection.elect_leader(active_agents)
 
         active_targets = []
         for agent in active_agents:
-            target = agent.step(env.grid, occupied_targets=active_targets)
+            target = agent.step(env.grid, active_agents, occupied_targets=active_targets)
             if target:
                 active_targets.append(target)
             
-            # Export telemetry through HAL bridge
             _ = HALBridge.export_ros2_occupancy_grid(agent.agent_id, agent.local_map)
 
-        # Mesh Network Sync
         num_a = len(active_agents)
         for i in range(num_a):
             for j in range(i + 1, num_a):
@@ -68,7 +62,7 @@ def main():
         coverage = calculate_global_coverage(global_map)
         
         leader_id = current_leader.agent_id if current_leader else "None"
-        print(f"[*] Step {step_num:02d} | Leader Node: Agent {leader_id} | Coverage: {coverage:.2f}%")
+        print(f"[*] Step {step_num:02d} | Coordinator: Agent {leader_id} | Coverage: {coverage:.2f}%")
 
     SwarmAnalytics.print_performance_report(agents, coverage)
 
