@@ -6,7 +6,9 @@ from core.mesh_node import MeshNode
 from core.analytics import SwarmAnalytics
 from core.fault_tolerance import SwarmHealthMonitor
 from core.hal_bridge import HALBridge
+from core.frontier_search import find_frontiers
 from algos.leader_election import LeaderElection
+from algos.market_auction import MarketAuction
 from config import NUM_AGENTS, MAX_SIMULATION_STEPS, GRID_WIDTH, GRID_HEIGHT, UNEXPLORED
 
 def get_merged_global_map(agents):
@@ -22,7 +24,7 @@ def calculate_global_coverage(global_map):
 
 def main():
     print("=" * 65)
-    print(" SwarmXplorer - Advanced Flocking & Formation Control Engine")
+    print(" SwarmXplorer - Market-Based Auction Task Allocation Engine")
     print("=" * 65)
 
     env = Environment()
@@ -44,12 +46,16 @@ def main():
         active_agents = health_monitor.get_active_agents(agents)
         current_leader = LeaderElection.elect_leader(active_agents)
 
-        active_targets = []
+        # Merge local maps to find global frontier list for the auctioneer
+        global_knowledge = get_merged_global_map(active_agents)
+        frontiers = find_frontiers(global_knowledge)
+
+        # Run Market-Based Auction (Contract Net Protocol)
+        auction_allocations = MarketAuction.run_auction(active_agents, frontiers)
+
         for agent in active_agents:
-            target = agent.step(env.grid, active_agents, occupied_targets=active_targets)
-            if target:
-                active_targets.append(target)
-            
+            assigned_target = auction_allocations.get(agent.agent_id, None)
+            agent.step(env.grid, active_agents, assigned_target=assigned_target)
             _ = HALBridge.export_ros2_occupancy_grid(agent.agent_id, agent.local_map)
 
         num_a = len(active_agents)
@@ -62,7 +68,7 @@ def main():
         coverage = calculate_global_coverage(global_map)
         
         leader_id = current_leader.agent_id if current_leader else "None"
-        print(f"[*] Step {step_num:02d} | Coordinator: Agent {leader_id} | Coverage: {coverage:.2f}%")
+        print(f"[*] Step {step_num:02d} | Auctioneer: Agent {leader_id} | Coverage: {coverage:.2f}%")
 
     SwarmAnalytics.print_performance_report(agents, coverage)
 
