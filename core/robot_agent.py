@@ -1,6 +1,5 @@
 import numpy as np
 from config import GRID_WIDTH, GRID_HEIGHT, UNEXPLORED, FREE_SPACE, OBSTACLE
-from core.frontier_search import find_frontiers, get_best_frontier
 from algos.a_star_planner import AStarPlanner
 from algos.flocking import FlockingController
 
@@ -38,24 +37,20 @@ class RobotAgent:
                             if cell_val == OBSTACLE:
                                 break
 
-    def step(self, env_grid, all_agents, occupied_targets=None):
+    def step(self, env_grid, all_agents, assigned_target=None):
         self.scan_and_update_map(env_grid)
 
-        frontiers = find_frontiers(self.local_map)
-        target = get_best_frontier(self.position, frontiers, occupied_targets)
-
-        if target is not None:
-            self.current_target = tuple(target)
-            path = AStarPlanner.plan_path(self.local_map, self.position, target)
+        if assigned_target is not None:
+            self.current_target = tuple(assigned_target)
+            path = AStarPlanner.plan_path(self.local_map, self.position, self.current_target)
             
             if len(path) > 1:
                 next_spot = np.array(path[1])
                 
-                # Apply Flocking correction vector to maintain formation
+                # Apply Flocking correction vector
                 flock_vector = FlockingController.compute_flocking_vector(self, all_agents)
                 adjusted_spot = next_spot + flock_vector
                 
-                # Bounds and obstacle validation
                 ax, ay = np.clip(adjusted_spot, [0, 0], [GRID_WIDTH - 1, GRID_HEIGHT - 1])
                 if self.local_map[ay, ax] != OBSTACLE:
                     next_spot = np.array([ax, ay])
