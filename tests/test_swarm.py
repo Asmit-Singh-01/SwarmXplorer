@@ -50,4 +50,13 @@ def test_leader_election():
     leader = LeaderElection.elect_leader(active_agents)
     
     assert leader.agent_id == 5
+from algos.market_auction import MarketAuction
+
+def test_market_auction():
+    agent = RobotAgent(agent_id=0, start_x=2, start_y=2)
+    frontiers = [(5, 5), (10, 10)]
+    
+    allocations = MarketAuction.run_auction([agent], frontiers)
+    assert agent.agent_id in allocations
+    assert allocations[agent.agent_id] in frontiers
     
