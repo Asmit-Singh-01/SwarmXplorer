@@ -6,6 +6,7 @@ from core.mesh_node import MeshNode
 from core.fault_tolerance import SwarmHealthMonitor
 from core.hal_bridge import HALBridge
 from algos.leader_election import LeaderElection
+from core.physics_model import DifferentialDrivePhysics
 
 def test_agent_initialization():
     agent = RobotAgent(agent_id=0, start_x=2, start_y=2)
@@ -59,4 +60,16 @@ def test_market_auction():
     allocations = MarketAuction.run_auction([agent], frontiers)
     assert agent.agent_id in allocations
     assert allocations[agent.agent_id] in frontiers
+
+
+def test_differential_drive_physics():
+    physics = DifferentialDrivePhysics(max_linear_speed=2.0)
+    start = [0, 0]
+    target = [3, 4]
     
+    next_pos = physics.compute_kinematic_step(start, target, dt=1.0)
+    assert len(next_pos) == 2
+    # Ensure movement respects speed limits
+    dist_moved = np.linalg.norm(next_pos - np.array(start))
+    assert dist_moved <= 2.0 + 1e-5
+
