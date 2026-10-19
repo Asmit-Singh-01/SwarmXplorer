@@ -117,4 +117,13 @@ def test_heterogeneous_market_auction():
     assert agent_land.agent_id in allocations
     assert agent_air.agent_id not in allocations
 
+from core.behavior_states import BehaviorStateMachine, RobotState
+from core.robot_agent import RobotAgent
+
+def test_behavior_state_machine():
+    agent = RobotAgent(agent_id=0, start_x=2, start_y=2)
+    agent.total_distance_traveled = 120 # Exceeds threshold
+    
+    state = BehaviorStateMachine.evaluate_state(agent, max_energy_distance=100)
+    assert state == RobotState.RETURNING_BASE
 
