@@ -126,4 +126,18 @@ def test_behavior_state_machine():
     
     state = BehaviorStateMachine.evaluate_state(agent, max_energy_distance=100)
     assert state == RobotState.RETURNING_BASE
+from core.telemetry_logger import SwarmTelemetryLogger
+from core.robot_agent import RobotAgent
+
+def test_telemetry_logger():
+    logger = SwarmTelemetryLogger(log_dir="test_logs")
+    agent = RobotAgent(agent_id=0, start_x=2, start_y=2)
+    
+    logger.log_step(step_num=1, agents=[agent], global_coverage=12.5, leader_id=0)
+    path = logger.save_to_disk()
+    
+    assert os.path.exists(path)
+    # Cleanup test log file
+    os.remove(path)
+    os.rmdir("test_logs")
 
