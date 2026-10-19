@@ -4,10 +4,11 @@ from algos.a_star_planner import AStarPlanner
 from algos.flocking import FlockingController
 
 class RobotAgent:
-    def __init__(self, agent_id, start_x, start_y, sensor_range=3):
+    def __init__(self, agent_id, start_x, start_y, sensor_range=3, capability="GENERAL"):
         self.agent_id = agent_id
         self.position = np.array([start_x, start_y], dtype=int)
         self.sensor_range = sensor_range
+        self.capability = capability  # e.g., 'AIR', 'LAND', 'UNDERGROUND', 'UNDERWATER', 'GENERAL'
         self.current_target = None
         self.total_distance_traveled = 0
         
@@ -47,7 +48,6 @@ class RobotAgent:
             if len(path) > 1:
                 next_spot = np.array(path[1])
                 
-                # Apply Flocking correction vector
                 flock_vector = FlockingController.compute_flocking_vector(self, all_agents)
                 adjusted_spot = next_spot + flock_vector
                 
@@ -69,4 +69,3 @@ class RobotAgent:
         explored_cells = np.sum(self.local_map != UNEXPLORED)
         total_cells = GRID_WIDTH * GRID_HEIGHT
         return (explored_cells / total_cells) * 100
-        
