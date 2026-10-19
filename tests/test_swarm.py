@@ -79,5 +79,26 @@ import os
 def test_docker_config_exists():
     assert os.path.exists("Dockerfile")
     assert os.path.exists("docker-compose.yml")
+from core.voxel_grid_3d import VoxelGrid3D
+from core.sensor_fusion import SensorNoiseFilter
+
+def test_voxel_grid_3d():
+    voxel_world = VoxelGrid3D(width=10, height=10, depth=5)
+    voxel_world.update_voxel(2, 3, 1, 2) # Set obstacle
+    sub_vol = voxel_world.get_local_volume((2, 3, 1), radius=1)
+    assert sub_vol.shape[0] > 0
+    assert 2 in sub_vol
+
+def test_sensor_noise_and_kalman():
+    true_dist = 5.0
+    noisy_measurement = SensorNoiseFilter.add_lidar_noise(true_dist, noise_level=0.1)
+    
+    # Run through Kalman filter
+    smoothed_state, _ = SensorNoiseFilter.kalman_filter_step(
+        estimated_state=4.8, 
+        measurement=noisy_measurement, 
+        covariance=0.5
+    )
+    assert isinstance(smoothed_state, float)
 
 
