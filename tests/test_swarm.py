@@ -100,5 +100,21 @@ def test_sensor_noise_and_kalman():
         covariance=0.5
     )
     assert isinstance(smoothed_state, float)
+from algos.market_auction import MarketAuction
+from core.robot_agent import RobotAgent
+
+def test_heterogeneous_market_auction():
+    agent_air = RobotAgent(agent_id=0, start_x=2, start_y=2, capability="AIR")
+    agent_land = RobotAgent(agent_id=1, start_x=10, start_y=10, capability="LAND")
+    
+    frontiers = [(5, 5)]
+    # Task 0 requires LAND capability
+    task_requirements = {0: "LAND"}
+    
+    allocations = MarketAuction.run_auction([agent_air, agent_land], frontiers, task_requirements)
+    
+    # Only LAND agent should be allocated since AIR agent capability doesn't match
+    assert agent_land.agent_id in allocations
+    assert agent_air.agent_id not in allocations
 
 
