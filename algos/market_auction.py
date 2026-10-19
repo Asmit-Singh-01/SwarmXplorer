@@ -3,14 +3,14 @@ from algos.a_star_planner import AStarPlanner
 
 class MarketAuction:
     """
-    Contract Net Protocol (CNP) / Auction-Based Task Allocation Engine.
-    Agents bid on available frontiers based on exact A* motion planning path cost.
+    Enhanced Contract Net Protocol (CNP) featuring Heterogeneous Capability Matching
+    and exact A* path cost evaluation for multi-domain swarm tasks.
     """
     @staticmethod
-    def run_auction(agents, frontiers):
+    def run_auction(agents, frontiers, task_requirements=None):
         """
-        Conducts a decentralized combinatorial auction where active agents 
-        bid on available frontier tasks. Returns a dictionary mapping agent_id -> target.
+        Conducts a capability-filtered combinatorial auction where agents 
+        bid on frontier tasks only if their domain capability matches the task requirement.
         """
         if not frontiers or not agents:
             return {}
@@ -18,17 +18,24 @@ class MarketAuction:
         allocations = {}
         claimed_frontiers = set()
 
-        # Sort agents to ensure deterministic auction evaluation order
         sorted_agents = sorted(agents, key=lambda a: a.agent_id)
 
-        for agent in sorted_agents:
-            best_frontier = None
+        for i, f in enumerate(frontiers):
+            f_tuple = tuple(f)
+            if f_tuple in claimed_frontiers:
+                continue
+
+            best_agent = None
             min_cost = float('inf')
 
-            for f in frontiers:
-                f_tuple = tuple(f)
-                if f_tuple in claimed_frontiers:
-                    continue
+            # Determine if specific task requirement exists (default to general exploration)
+            required_capability = task_requirements.get(i, "GENERAL") if task_requirements else "GENERAL"
+
+            for agent in sorted_agents:
+                # Check capability match if agent has capability attribute
+                agent_cap = getattr(agent, 'capability', 'GENERAL')
+                if agent_cap != "GENERAL" and required_capability != "GENERAL" and agent_cap != required_capability:
+                    continue  # Skip agent if capability does not match task requirement
 
                 # Calculate actual movement cost using A* Pathfinder
                 path = AStarPlanner.plan_path(agent.local_map, agent.position, f)
@@ -36,11 +43,10 @@ class MarketAuction:
 
                 if cost < min_cost:
                     min_cost = cost
-                    best_frontier = f_tuple
+                    best_agent = agent
 
-            if best_frontier is not None:
-                allocations[agent.agent_id] = best_frontier
-                claimed_frontiers.add(best_frontier)
+            if best_agent is not None and best_agent.agent_id not in allocations.values():
+                allocations[best_agent.agent_id] = f_tuple
+                claimed_frontiers.add(f_tuple)
 
         return allocations
-      
