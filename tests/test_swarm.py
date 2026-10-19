@@ -74,5 +74,10 @@ def test_differential_drive_physics():
     # Verify that the agent moved correctly towards the target on the grid
     assert next_pos[0] >= start[0]
     assert next_pos[1] >= start[1]
+import os
+
+def test_docker_config_exists():
+    assert os.path.exists("Dockerfile")
+    assert os.path.exists("docker-compose.yml")
 
 
