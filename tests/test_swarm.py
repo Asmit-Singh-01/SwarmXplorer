@@ -155,3 +155,13 @@ def test_mapf_space_time_planner():
     assert len(path) > 0
     assert path[0][:2] == start
     assert path[-1][:2] == goal
+from algos.velocity_obstacles import VelocityObstacles
+
+def test_velocity_obstacles():
+    current_pos = [0, 0]
+    preferred_vel = [1.0, 0.0]
+    neighbor_pos = [1.0, 0.0]
+    neighbor_vel = [-1.0, 0.0]
+    
+    safe_vel = VelocityObstacles.compute_safe_velocity(current_pos, preferred_vel, [neighbor_pos], [neighbor_vel])
+    assert len(safe_vel) == 2
