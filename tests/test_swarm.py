@@ -165,3 +165,9 @@ def test_velocity_obstacles():
     
     safe_vel = VelocityObstacles.compute_safe_velocity(current_pos, preferred_vel, [neighbor_pos], [neighbor_vel])
     assert len(safe_vel) == 2
+from main import run_swarm_simulation
+
+def test_main_simulation_loop():
+    # Run short simulation cycle to verify integration
+    run_swarm_simulation(max_steps=2)
+    assert True
