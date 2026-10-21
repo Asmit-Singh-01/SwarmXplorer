@@ -141,3 +141,17 @@ def test_telemetry_logger():
     os.remove(path)
     os.rmdir("test_logs")
 
+import numpy as np
+from algos.mapf_cbs import MAPFEngine
+from config import GRID_WIDTH, GRID_HEIGHT, FREE_SPACE
+
+def test_mapf_space_time_planner():
+    local_map = np.full((GRID_HEIGHT, GRID_WIDTH), FREE_SPACE, dtype=int)
+    start = (2, 2)
+    goal = (5, 5)
+    
+    path = MAPFEngine.space_time_a_star(local_map, start, goal)
+    assert path is not None
+    assert len(path) > 0
+    assert path[0][:2] == start
+    assert path[-1][:2] == goal
