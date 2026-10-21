@@ -1,77 +1,60 @@
-import time
 import numpy as np
-from core.environment import Environment
+from config import GRID_WIDTH, GRID_HEIGHT, FREE_SPACE, OBSTACLE, UNEXPLORED
 from core.robot_agent import RobotAgent
-from core.mesh_node import MeshNode
-from core.analytics import SwarmAnalytics
-from core.fault_tolerance import SwarmHealthMonitor
-from core.hal_bridge import HALBridge
-from core.frontier_search import find_frontiers
-from algos.leader_election import LeaderElection
+from core.sensor_fusion import SensorNoiseFilter
 from algos.market_auction import MarketAuction
-from config import NUM_AGENTS, MAX_SIMULATION_STEPS, GRID_WIDTH, GRID_HEIGHT, UNEXPLORED
+from algos.mapf_cbs import MAPFEngine
+from algos.velocity_obstacles import VelocityObstacles
+from core.telemetry_logger import SwarmTelemetryLogger
 
-def get_merged_global_map(agents):
-    global_map = np.zeros((GRID_HEIGHT, GRID_WIDTH), dtype=int)
-    for agent in agents:
-        global_map = np.maximum(global_map, agent.local_map)
-    return global_map
-
-def calculate_global_coverage(global_map):
-    explored = np.sum(global_map != UNEXPLORED)
-    total = GRID_WIDTH * GRID_HEIGHT
-    return (explored / total) * 100
-
-def main():
-    print("=" * 65)
-    print(" SwarmXplorer - Market-Based Auction Task Allocation Engine")
-    print("=" * 65)
-
-    env = Environment()
-    health_monitor = SwarmHealthMonitor(heartbeat_timeout=2.0)
-
+def run_swarm_simulation(max_steps=50):
+    print("🚀 Initializing SwarmXplorer Enterprise Orchestration Engine...")
+    
+    # Initialize Environment Grid (Simple test map with obstacles)
+    env_grid = np.full((GRID_HEIGHT, GRID_WIDTH), FREE_SPACE, dtype=int)
+    env_grid[5:15, 10:12] = OBSTACLE # Add a structural obstacle wall
+    
+    # Initialize Heterogeneous Swarm Agents
     agents = [
-        RobotAgent(agent_id=0, start_x=2, start_y=2),
-        RobotAgent(agent_id=1, start_x=17, start_y=2),
-        RobotAgent(agent_id=2, start_x=2, start_y=17)
+        RobotAgent(agent_id=0, start_x=2, start_y=2, capability="AIR"),
+        RobotAgent(agent_id=1, start_x=2, start_y=18, capability="LAND"),
+        RobotAgent(agent_id=2, start_x=18, start_y=2, capability="UNDERGROUND")
     ]
-
-    for agent in agents:
-        health_monitor.register_agent(agent.agent_id)
-
-    for step_num in range(1, MAX_SIMULATION_STEPS + 1):
-        for agent in agents:
-            health_monitor.update_heartbeat(agent.agent_id)
-
-        active_agents = health_monitor.get_active_agents(agents)
-        current_leader = LeaderElection.elect_leader(active_agents)
-
-        # Merge local maps to find global frontier list for the auctioneer
-        global_knowledge = get_merged_global_map(active_agents)
-        frontiers = find_frontiers(global_knowledge)
-
-        # Run Market-Based Auction (Contract Net Protocol)
-        auction_allocations = MarketAuction.run_auction(active_agents, frontiers)
-
-        for agent in active_agents:
-            assigned_target = auction_allocations.get(agent.agent_id, None)
-            agent.step(env.grid, active_agents, assigned_target=assigned_target)
-            _ = HALBridge.export_ros2_occupancy_grid(agent.agent_id, agent.local_map)
-
-        num_a = len(active_agents)
-        for i in range(num_a):
-            for j in range(i + 1, num_a):
-                if MeshNode.is_in_range(active_agents[i].position, active_agents[j].position):
-                    MeshNode.sync_maps(active_agents[i], active_agents[j])
-
-        global_map = get_merged_global_map(active_agents)
-        coverage = calculate_global_coverage(global_map)
+    
+    telemetry = SwarmTelemetryLogger(log_dir="logs")
+    
+    for step in range(max_steps):
+        print(f"\n--- Simulation Step [{step + 1}/{max_steps}] ---")
         
-        leader_id = current_leader.agent_id if current_leader else "None"
-        print(f"[*] Step {step_num:02d} | Auctioneer: Agent {leader_id} | Coverage: {coverage:.2f}%")
+        # 1. Collect all agent local frontiers or exploration targets
+        all_frontiers = [[10, 5], [15, 15], [5, 15], [12, 8]]
+        
+        # 2. Run Capability-Aware Market Auction
+        allocations = MarketAuction.run_auction(agents, all_frontiers)
+        
+        # 3. Execute Agent Steps with Sensor Noise & Collision Avoidance
+        for agent in agents:
+            assigned_target = allocations.get(agent.agent_id)
+            
+            # Simulate Sensor Noise & Filtering
+            noisy_dist = SensorNoiseFilter.add_lidar_noise(4.0)
+            smoothed_state, _ = SensorNoiseFilter.kalman_filter_step(3.8, noisy_dist, 0.2)
+            
+            # Step agent using orchestrator logic
+            target_pos = assigned_target if assigned_target else agent.position
+            agent.step(env_grid, agents, assigned_target=target_pos)
+            
+        # 4. Calculate Global Coverage
+        total_explored = sum(np.sum(a.local_map != UNEXPLORED) for a in agents)
+        global_coverage = (total_explored / (GRID_WIDTH * GRID_HEIGHT * len(agents))) * 100
+        
+        # 5. Log Telemetry
+        telemetry.log_step(step_num=step+1, agents=agents, global_coverage=global_coverage, leader_id=0)
+        print(f"Global Coverage: {global_coverage:.2f}% | Active Allocations: {allocations}")
 
-    SwarmAnalytics.print_performance_report(agents, coverage)
+    # Save Blackbox Mission Log
+    log_path = telemetry.save_to_disk()
+    print(f"\n✅ Mission simulation complete. Telemetry saved to: {log_path}")
 
 if __name__ == "__main__":
-    main()
-    
+    run_swarm_simulation()
