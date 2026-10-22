@@ -1,6 +1,7 @@
 import json
 import os
 from datetime import datetime
+import numpy as np
 
 class SwarmTelemetryLogger:
     """
@@ -17,17 +18,17 @@ class SwarmTelemetryLogger:
     def log_step(self, step_num, agents, global_coverage, leader_id):
         """Records telemetry snapshot for a specific simulation step."""
         step_data = {
-            "step": step_num,
+            "step": int(step_num),
             "timestamp": datetime.now().isoformat(),
-            "global_coverage_pct": round(global_coverage, 2),
-            "leader_id": leader_id,
+            "global_coverage_pct": round(float(global_coverage), 2),
+            "leader_id": int(leader_id),
             "agents": [
                 {
-                    "agent_id": a.agent_id,
-                    "position": a.position.tolist(),
-                    "capability": getattr(a, 'capability', 'GENERAL'),
-                    "distance_traveled": a.total_distance_traveled,
-                    "current_target": list(a.current_target) if a.current_target else None
+                    "agent_id": int(a.agent_id),
+                    "position": [int(p) for p in a.position],
+                    "capability": str(getattr(a, 'capability', 'GENERAL')),
+                    "distance_traveled": int(a.total_distance_traveled),
+                    "current_target": [int(p) for p in a.current_target] if a.current_target is not None else None
                 }
                 for a in agents
             ]
