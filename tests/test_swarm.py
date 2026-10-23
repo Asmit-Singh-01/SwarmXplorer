@@ -175,4 +175,15 @@ def test_main_simulation_loop():
     # Cleanup generated log file after test
     if os.path.exists(log_path):
         os.remove(log_path)
+from algos.frontier_detector import FrontierDetector
+import numpy as np
+from config import FREE_SPACE, UNEXPLORED
+
+def test_frontier_detector():
+    local_map = np.full((10, 10), UNEXPLORED, dtype=int)
+    local_map[5, 5] = FREE_SPACE
+    # Make adjacent cell unexplored (default)
+    
+    frontiers = FrontierDetector.extract_frontiers(local_map)
+    assert isinstance(frontiers, list)
 
