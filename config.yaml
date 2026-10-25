@@ -1,0 +1,25 @@
+project:
+  name: "SwarmXplorer"
+  version: "1.0.0-MVP"
+  description: "Enterprise-grade decentralized heterogeneous swarm robotics framework"
+
+simulation:
+  grid_width: 25
+  grid_height: 25
+  max_steps: 50
+  sensor_range: 3
+
+agents:
+  - id: 0
+    capability: "AIR"
+    start_pos: [2, 2]
+  - id: 1
+    capability: "LAND"
+    start_pos: [2, 22]
+  - id: 2
+    capability: "UNDERGROUND"
+    start_pos: [22, 2]
+
+logging:
+  log_dir: "logs"
+  save_telemetry: true
