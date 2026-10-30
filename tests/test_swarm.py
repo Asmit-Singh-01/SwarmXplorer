@@ -198,3 +198,19 @@ def test_frontier_detector():
     frontiers = FrontierDetector.extract_frontiers(local_map)
     assert isinstance(frontiers, list)
 
+from core.mesh_resilience import MeshResilienceHandler
+import time
+
+def test_mesh_resilience():
+    handler = MeshResilienceHandler(agent_id=0, heartbeat_timeout_sec=0.1)
+    handler.update_heartbeat(neighbor_id=1)
+    
+    # Initially connected
+    assert handler.connection_status[1] == True
+    
+    # Wait for timeout to simulate packet drop
+    time.sleep(0.15)
+    disconnected = handler.check_link_health()
+    
+    assert 1 in disconnected
+    assert handler.connection_status[1] == False
