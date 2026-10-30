@@ -1,7 +1,6 @@
 import os, glob, json, time, random
 from google import genai
 
-# Gather code files across languages
 repo_files = glob.glob('**/*.py', recursive=True) + glob.glob('**/*.cpp', recursive=True) + glob.glob('**/*.js', recursive=True) + glob.glob('**/*.rs', recursive=True)
 
 context = ''
@@ -13,8 +12,6 @@ for fname in repo_files[:10]:
         pass
 
 client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
-
-# Decide action: 50% chance modify existing, 50% chance new file
 target_file = random.choice(repo_files) if repo_files and random.random() > 0.5 else None
 
 if target_file:
