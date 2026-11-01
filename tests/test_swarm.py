@@ -249,4 +249,19 @@ def test_rf_signal_propagation():
     assert isinstance(rssi, float)
     pdr = rf_model.estimate_packet_delivery_ratio(rssi)
     assert 0.0 <= pdr <= 1.0
+from core.battery_management import BatteryManager
+
+def test_battery_management():
+    manager = BatteryManager(max_capacity_mah=100.0, discharge_rate_per_step=10.0)
+    assert manager.get_percentage() == 100.0
+    
+    # Consume power
+    manager.consume_power(distance_moved=2.0)
+    assert manager.get_percentage() < 100.0
+    
+    # Drain down to trigger RTB
+    for _ in range(5):
+        manager.consume_power(distance_moved=5.0)
+        
+    assert manager.is_rtb_triggered == True
 
