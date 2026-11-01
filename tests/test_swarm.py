@@ -214,3 +214,30 @@ def test_mesh_resilience():
     
     assert 1 in disconnected
     assert handler.connection_status[1] == False
+from core.odometry_drift import OdometryDriftEstimator
+from algos.fault_tolerant_auction import FaultTolerantAuctionManager
+from core.robot_agent import RobotAgent
+import numpy as np
+
+def test_odometry_drift_and_compensation():
+    estimator = OdometryDriftEstimator(drift_factor=0.02, slip_probability=0.0)
+    noisy_vel = estimator.inject_drift_and_slip([1.0, 0.0])
+    assert len(noisy_vel) == 2
+
+    corrected_pos = estimator.compensate_drift([0.0, 0.0], imu_yaw=0.0, step_distance=1.0)
+    assert corrected_pos[0] == 1.0
+
+def test_fault_tolerant_re_auction():
+    agents = [
+        RobotAgent(agent_id=0, start_x=2, start_y=2, capability="AIR"),
+        RobotAgent(agent_id=1, start_x=4, start_y=4, capability="LAND")
+    ]
+    allocations = {0: (10, 10), 1: (5, 5)}
+    failed_agent_ids = [0]
+    
+    new_allocations = FaultTolerantAuctionManager.handle_failed_agents(
+        allocations, agents, failed_agent_ids, unassigned_frontiers=[(8, 8)]
+    )
+    assert 0 not in new_allocations
+    assert 1 in new_allocations
+
