@@ -240,4 +240,13 @@ def test_fault_tolerant_re_auction():
     )
     assert 0 not in new_allocations
     assert 1 in new_allocations
+from core.rf_signal_model import RFSignalPropagationModel
+
+def test_rf_signal_propagation():
+    rf_model = RFSignalPropagationModel()
+    rssi = rf_model.calculate_rssi(distance_meters=10.0, wall_count=1)
+    
+    assert isinstance(rssi, float)
+    pdr = rf_model.estimate_packet_delivery_ratio(rssi)
+    assert 0.0 <= pdr <= 1.0
 
