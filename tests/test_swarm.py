@@ -277,4 +277,13 @@ def test_mission_sequencer():
     # Force low battery RTB safety override
     rtb_state = sequencer.update_state(battery_pct=15.0, coverage_pct=50.0, target_reached=False)
     assert rtb_state == "RETURNING_TO_BASE"
+from core.relative_localization import RelativeLocalizationEngine
+
+def test_relative_localization():
+    positions = [[0.0, 0.0], [3.0, 4.0]]
+    distances = RelativeLocalizationEngine.compute_pairwise_distances(positions)
+    
+    assert distances.shape == (2, 2)
+    # Distance between (0,0) and (3,4) is 5.0 (with slight UWB noise)
+    assert 4.9 <= distances[0, 1] <= 5.1
     
