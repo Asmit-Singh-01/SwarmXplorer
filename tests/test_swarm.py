@@ -287,3 +287,13 @@ def test_relative_localization():
     # Distance between (0,0) and (3,4) is 5.0 (with slight UWB noise)
     assert 4.9 <= distances[0, 1] <= 5.1
     
+from core.obstacle_predictor import ObstacleTrajectoryPredictor
+
+def test_obstacle_trajectory_prediction():
+    predictor = ObstacleTrajectoryPredictor(prediction_horizon_steps=3)
+    future_path = predictor.predict_trajectory(current_pos=[0.0, 0.0], current_velocity=[1.0, 2.0])
+    
+    assert len(future_path) == 3
+    assert future_path[0] == [1.0, 2.0]
+    assert future_path[2] == [3.0, 6.0]
+    
