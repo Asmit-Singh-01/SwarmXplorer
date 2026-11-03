@@ -264,4 +264,17 @@ def test_battery_management():
         manager.consume_power(distance_moved=5.0)
         
     assert manager.is_rtb_triggered == True
+from core.mission_sequencer import MissionSequencer
 
+def test_mission_sequencer():
+    sequencer = MissionSequencer(agent_id=0)
+    assert sequencer.current_state == "INIT"
+    
+    # Transition to Deploying
+    state = sequencer.update_state(battery_pct=100.0, coverage_pct=10.0, target_reached=False)
+    assert state == "DEPLOYING"
+    
+    # Force low battery RTB safety override
+    rtb_state = sequencer.update_state(battery_pct=15.0, coverage_pct=50.0, target_reached=False)
+    assert rtb_state == "RETURNING_TO_BASE"
+    
