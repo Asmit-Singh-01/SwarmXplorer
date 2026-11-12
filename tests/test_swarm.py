@@ -297,3 +297,13 @@ def test_obstacle_trajectory_prediction():
     assert future_path[0] == [1.0, 2.0]
     assert future_path[2] == [3.0, 6.0]
     
+from core.poc_simulator import PoCSimulationEngine
+import os
+
+def test_poc_simulation_recording():
+    sim = PoCSimulationEngine(width=10, height=10)
+    history = sim.run_simulation_steps(steps=5)
+    
+    assert len(history) == 5
+    assert "agents" in history[0]
+    
