@@ -13,10 +13,16 @@ class PoCSimulationEngine:
         self.grid = np.zeros((height, width), dtype=int)
         self.frames_history = []
 
-    def setup_obstacle_course(self):
-        # Place synthetic walls/obstacles representing a cave or warehouse
-        self.grid[5:15, 8:10] = 1  # Vertical wall barrier
-        self.grid[10, 2:6] = 1   # Horizontal obstacle
+        def setup_obstacle_course(self):
+        # Safe obstacle placement bounded within grid dimensions
+        h, w = self.grid.shape
+        if h > 10 and w > 10:
+            self.grid[5:min(15, h), min(8, w-1):min(10, w)] = 1  
+            self.grid[min(10, h-1), min(2, w-1):min(6, w)] = 1   
+        else:
+            # For smaller test grids, place safe internal obstacles
+            self.grid[min(2, h-1), min(2, w-1)] = 1
+
 
     def run_simulation_steps(self, steps=15):
         self.setup_obstacle_course()
